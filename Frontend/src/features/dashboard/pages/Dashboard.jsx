@@ -170,25 +170,103 @@ const Dashboard = () => {
               {/* Analysis Result */}
               {analysis && (
                 <div className="space-y-4">
+                  {/* Location Info */}
                   <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
                     <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-3 font-medium">
-                      Location Analysis
+                      Location
                     </p>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#9CA3AF]">Latitude:</span>
-                        <span className="text-[#F0FDF4] font-mono">{analysis.location.latitude.toFixed(6)}</span>
+                        <span className="text-[#F0FDF4] font-mono">
+                          {analysis.location.latitude.toFixed(6)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#9CA3AF]">Longitude:</span>
-                        <span className="text-[#F0FDF4] font-mono">{analysis.location.longitude.toFixed(6)}</span>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-[#1B2E21]">
-                        <p className="text-xs text-[#9CA3AF] mb-2">Status:</p>
-                        <p className="text-sm text-[#22C55E]">{analysis.message}</p>
+                        <span className="text-[#F0FDF4] font-mono">
+                          {analysis.location.longitude.toFixed(6)}
+                        </span>
                       </div>
                     </div>
                   </div>
+
+                  {/* Environmental Conditions */}
+                  {analysis.environment && (
+                    <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
+                      <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-3 font-medium">
+                        Environmental Conditions
+                      </p>
+                      <div className="space-y-3">
+                        {/* Temperature */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🌡</span>
+                            <span className="text-sm text-[#9CA3AF]">Temperature</span>
+                          </div>
+                          <span className="text-sm text-[#F0FDF4] font-medium">
+                            {analysis.environment.temperature.value} {analysis.environment.temperature.unit}
+                          </span>
+                        </div>
+
+                        {/* Humidity */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">💧</span>
+                            <span className="text-sm text-[#9CA3AF]">Humidity</span>
+                          </div>
+                          <span className="text-sm text-[#F0FDF4] font-medium">
+                            {analysis.environment.humidity.value} {analysis.environment.humidity.unit}
+                          </span>
+                        </div>
+
+                        {/* Precipitation */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🌧</span>
+                            <span className="text-sm text-[#9CA3AF]">Precipitation</span>
+                          </div>
+                          <span className="text-sm text-[#F0FDF4] font-medium">
+                            {analysis.environment.precipitation.value} {analysis.environment.precipitation.unit}
+                          </span>
+                        </div>
+
+                        {/* Wind Speed */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">💨</span>
+                            <span className="text-sm text-[#9CA3AF]">Wind Speed</span>
+                          </div>
+                          <span className="text-sm text-[#F0FDF4] font-medium">
+                            {analysis.environment.windSpeed.value} {analysis.environment.windSpeed.unit}
+                          </span>
+                        </div>
+
+                        {/* Weather Condition */}
+                        {analysis.environment.weather && (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">☁️</span>
+                              <span className="text-sm text-[#9CA3AF]">Weather</span>
+                            </div>
+                            <span className="text-sm text-[#F0FDF4] font-medium">
+                              {analysis.environment.weather.description}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Data Source */}
+                  {analysis.source && (
+                    <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[#9CA3AF]">Data Source:</span>
+                        <span className="text-[#22C55E] font-medium">{analysis.source.name}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
