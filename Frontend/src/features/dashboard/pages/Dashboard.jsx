@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Leaf, MapPin, Sparkles, LogOut, ChevronRight, X } from "lucide-react";
 import { analyzeLocation } from "../state/location.slice.js";
+import { setUser } from "../../auth/state/auth.slice.js";
+import axios from "axios";
 import Map from "../components/Map";
 
 const Dashboard = () => {
@@ -12,6 +14,19 @@ const Dashboard = () => {
   const { selectedLocation, analysis, loading, error } = useSelector((state) => state.location);
   
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
+        withCredentials: true,
+      });
+      dispatch(setUser(null));
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const handleAnalyzeLocation = () => {
     if (!selectedLocation) {
@@ -26,9 +41,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#050B07] text-[#F0FDF4] font-[Inter,sans-serif] overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#050B07] text-[#F0FDF4] font-[Inter,sans-serif] overflow-hidden animate-fade-in">
       {/* Header */}
-      <header className="border-b border-[#1B2E21]/60 bg-[#050B07]/95 backdrop-blur-md z-50">
+      <header className="border-b border-[#1B2E21]/60 bg-[#050B07]/95 backdrop-blur-md z-50 animate-fade-in-up stagger-1 opacity-0">
         <div className="px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -47,8 +62,8 @@ const Dashboard = () => {
 
             {/* User Actions */}
             <button
-              onClick={() => {/* Add logout logic */}}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1B2E21] hover:border-[#22C55E]/60 hover:bg-[rgba(255,255,255,0.03)] transition-all duration-200"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1B2E21] hover:border-[#22C55E]/60 hover:bg-[rgba(255,255,255,0.03)] active:scale-[0.98] transition-all duration-200"
             >
               <LogOut className="w-4 h-4" />
               <span className="text-sm font-medium hidden sm:inline">Logout</span>
@@ -58,7 +73,7 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content - Full Page Map with Sliding Panel */}
-      <main className="flex-1 relative overflow-hidden">
+      <main className="flex-1 relative overflow-hidden animate-fade-in-up stagger-2 opacity-0">
         {/* Full Page Map */}
         <div className="absolute inset-0">
           <Map initialPosition={[20.5937, 78.9629]} />
@@ -119,7 +134,7 @@ const Dashboard = () => {
                   {!analysis && !loading && (
                     <button
                       onClick={handleAnalyzeLocation}
-                      className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] rounded-lg font-medium transition-colors duration-200"
+                      className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] hover:-translate-y-0.5 active:scale-[0.98] text-[#050B07] rounded-lg font-medium transition-all duration-200"
                     >
                       <Sparkles className="w-4 h-4" />
                       <span className="text-sm">Analyze Location</span>
@@ -143,13 +158,14 @@ const Dashboard = () => {
 
               {/* Loading State */}
               {loading && (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-[#22C55E]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="w-10 h-10 text-[#22C55E] animate-spin" />
+                <div className="text-center py-16 animate-fade-in">
+                  <div className="w-20 h-20 bg-[#22C55E]/10 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                    <Sparkles className="w-10 h-10 text-[#22C55E] animate-pulse-slow" />
+                    <span className="absolute inset-0 rounded-full border-2 border-[#22C55E] border-t-transparent animate-spin opacity-50"></span>
                   </div>
                   <p className="text-base text-[#F0FDF4] mb-2 font-medium">Analyzing...</p>
-                  <p className="text-sm text-[#9CA3AF] px-4">
-                    Analyzing location data
+                  <p className="text-sm text-[#9CA3AF] px-4 animate-pulse">
+                    Evaluating environmental conditions
                   </p>
                 </div>
               )}
@@ -193,7 +209,7 @@ const Dashboard = () => {
 
                   {/* Environmental Conditions */}
                   {analysis.environment && (
-                    <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
+                    <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4 animate-fade-in-up stagger-1 opacity-0">
                       <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-3 font-medium">
                         Environmental Conditions
                       </p>
@@ -263,7 +279,7 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       {/* Summary */}
                       {analysis.recommendations.summary && (
-                        <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
+                        <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4 animate-fade-in-up stagger-2 opacity-0">
                           <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-2 font-medium">
                             PlantWise Analysis
                           </p>
@@ -284,7 +300,8 @@ const Dashboard = () => {
                       {analysis.recommendations.recommendations?.map((plant, index) => (
                         <div
                           key={index}
-                          className="bg-[#050B07] border border-[#1B2E21] hover:border-[#22C55E]/40 rounded-lg p-4 transition-colors duration-200"
+                          style={{ animationDelay: `${index * 100 + 250}ms` }}
+                          className="opacity-0 animate-fade-in-up bg-[#050B07] border border-[#1B2E21] hover:border-[#22C55E]/40 hover:-translate-y-1 hover:shadow-lg rounded-lg p-4 transition-all duration-300"
                         >
                           {/* Plant Header */}
                           <div className="flex items-start gap-2 mb-3">

@@ -8,6 +8,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { handleRegister } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -24,6 +25,8 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const user = await handleRegister({
         email: formData.email,
@@ -31,9 +34,11 @@ const Register = () => {
         fullname: formData.fullname,
       });
       // Redirect after successful registration
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Registration failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,7 +130,7 @@ const Register = () => {
         <main className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10 md:py-14">
           <div className="w-full max-w-[440px]">
             {/* Heading Module */}
-            <div className="mb-9">
+            <div className="mb-9 animate-fade-in-up stagger-1">
               <h1 className="font-[Outfit,sans-serif] font-light text-[36px] sm:text-[40px] leading-[1.15] tracking-tight text-[#F0FDF4]">
                 Create Account
               </h1>
@@ -139,7 +144,7 @@ const Register = () => {
               {/* Field Stack */}
               <div className="space-y-5">
                 {/* Field 1: Full Name */}
-                <div>
+                <div className="animate-fade-in-up stagger-2">
                   <label
                     htmlFor="fullname"
                     className="block font-[Inter,sans-serif] text-xs uppercase tracking-widest text-[#9CA3AF] font-medium mb-2"
@@ -162,7 +167,7 @@ const Register = () => {
                 </div>
 
                 {/* Field 2: Email */}
-                <div>
+                <div className="animate-fade-in-up stagger-3">
                   <label
                     htmlFor="email"
                     className="block font-[Inter,sans-serif] text-xs uppercase tracking-widest text-[#9CA3AF] font-medium mb-2"
@@ -185,7 +190,7 @@ const Register = () => {
                 </div>
 
                 {/* Field 3: Password */}
-                <div>
+                <div className="animate-fade-in-up stagger-4">
                   <label
                     htmlFor="password"
                     className="block font-[Inter,sans-serif] text-xs uppercase tracking-widest text-[#9CA3AF] font-medium mb-2"
@@ -221,15 +226,23 @@ const Register = () => {
               </div>
 
               {/* Action / Submit Button */}
-              <button
-                type="submit"
-                className="w-full h-12 mt-8 rounded-lg bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] font-[Inter,sans-serif] font-medium tracking-wide transition-colors duration-200 flex items-center justify-center shadow-none active:scale-[0.99] cursor-pointer"
-              >
-                Create Account
-              </button>
+              <div className="animate-fade-in-up stagger-5">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full h-12 mt-8 rounded-lg bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] font-[Inter,sans-serif] font-medium tracking-wide transition-all duration-200 flex items-center justify-center shadow-none cursor-pointer ${isLoading ? 'opacity-80 cursor-not-allowed' : 'hover:-translate-y-0.5 active:scale-[0.98]'}`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-[#050B07]/30 border-t-[#050B07] rounded-full animate-spin"></span>
+                      Creating...
+                    </span>
+                  ) : "Create Account"}
+                </button>
+              </div>
 
               {/* Form Inline Footer Links */}
-              <div className="mt-6 text-center">
+              <div className="mt-6 text-center animate-fade-in-up stagger-6">
                 <p className="text-xs font-[Inter,sans-serif] text-[#9CA3AF]">
                   Already have an account?{" "}
                   <Link

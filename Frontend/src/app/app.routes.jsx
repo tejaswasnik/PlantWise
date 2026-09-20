@@ -2,11 +2,13 @@ import { createBrowserRouter } from "react-router";
 import Login from "../features/auth/pages/Login.jsx";
 import Register from "../features/auth/pages/Register.jsx";
 import Dashboard from "../features/dashboard/pages/Dashboard.jsx";
+import LandingPage from "../features/landing/pages/LandingPage.jsx";
+import Protected from "../components/Protected.jsx";
 
 export const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: <LandingPage />,
   },
   {
     path: "/login",
@@ -18,6 +20,10 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <Dashboard />,
+    element: (
+      <Protected>
+        <Dashboard />
+      </Protected>
+    ),
   },
 ]);

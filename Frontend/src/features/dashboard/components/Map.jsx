@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
-import { MapPin, Navigation } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import { MapPin, Navigation, Search, Loader2 } from "lucide-react";
 import { setSelectedLocation } from "../state/location.slice.js";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -58,27 +58,96 @@ function LocationMarker({ position, setPosition, dispatch }) {
   );
 }
 
+// Map Controller for flying to coordinates
+function MapController({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, 13, { duration: 1.5 });
+    }
+  }, [center, map]);
+  return null;
+}
+
 const Map = ({ initialPosition = [20.5937, 78.9629] }) => {
   const dispatch = useDispatch();
   const [position, setPosition] = useState(null);
+  const [mapCenter, setMapCenter] = useState(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  // Debounce search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim().length > 2) {
+        performSearch(searchQuery);
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const performSearch = async (query) => {
+    setIsSearching(true);
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        format: "json",
+        limit: "5",
+        addressdetails: "1"
+      });
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`);
+      if (!response.ok) throw new Error("Search failed");
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (error) {
+      console.error("Error searching location:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectResult = (result) => {
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+    const newPosition = [lat, lon];
+    
+    setPosition(newPosition);
+    setMapCenter(newPosition);
+    
+    dispatch(setSelectedLocation({
+      latitude: lat,
+      longitude: lon,
+    }));
+    
+    setSearchQuery(result.display_name);
+    setShowResults(false);
+  };
 
   // Get user's current location
   const handleGetCurrentLocation = useCallback(() => {
     setIsLoadingLocation(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        (pos) => {
           const newPosition = [
-            position.coords.latitude,
-            position.coords.longitude,
+            pos.coords.latitude,
+            pos.coords.longitude,
           ];
           setPosition(newPosition);
+          setMapCenter(newPosition);
           
           // Dispatch to Redux
           dispatch(setSelectedLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
           }));
           
           setIsLoadingLocation(false);
@@ -113,10 +182,58 @@ const Map = ({ initialPosition = [20.5937, 78.9629] }) => {
           setPosition={setPosition}
           dispatch={dispatch}
         />
+        <MapController center={mapCenter} />
       </MapContainer>
 
+      {/* Top Search Bar */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md z-[1000] px-4">
+        <div className="relative bg-[#0A1108] border border-[#1B2E21] rounded-lg shadow-lg flex items-center p-1">
+          <div className="pl-3 pr-2 text-[#9CA3AF]">
+            {isSearching ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
+          </div>
+          <input
+            type="text"
+            placeholder="Search for a location..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowResults(true);
+            }}
+            onFocus={() => setShowResults(true)}
+            className="flex-1 bg-transparent text-[#F0FDF4] placeholder-[#6B7280] text-sm focus:outline-none py-2"
+          />
+        </div>
+        
+        {/* Search Results Dropdown */}
+        {showResults && searchResults.length > 0 && (
+          <div className="absolute top-full left-4 right-4 mt-2 bg-[#0A1108]/98 backdrop-blur-md border border-[#1B2E21] rounded-lg shadow-2xl overflow-hidden">
+            <ul className="max-h-64 overflow-y-auto custom-scrollbar">
+              {searchResults.map((result, idx) => (
+                <li key={result.place_id || idx} className="border-b border-[#1B2E21] last:border-0">
+                  <button
+                    onClick={() => handleSelectResult(result)}
+                    className="w-full text-left px-4 py-3 hover:bg-[#1B2E21]/50 transition-colors focus:outline-none"
+                  >
+                    <p className="text-sm text-[#F0FDF4] font-medium truncate">
+                      {result.display_name.split(',')[0]}
+                    </p>
+                    <p className="text-xs text-[#9CA3AF] truncate mt-0.5">
+                      {result.display_name.split(',').slice(1).join(',')}
+                    </p>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
       {/* Floating Controls */}
-      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-3">
+      <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-3">
         {/* Get Current Location Button */}
         <button
           onClick={handleGetCurrentLocation}
@@ -173,6 +290,19 @@ const Map = ({ initialPosition = [20.5937, 78.9629] }) => {
         }
         .leaflet-popup-tip {
           background: white;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #050B07;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1B2E21;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #22C55E;
         }
       `}</style>
     </div>

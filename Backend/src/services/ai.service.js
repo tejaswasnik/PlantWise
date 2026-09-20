@@ -77,11 +77,18 @@ Based on this environmental data, recommend 5 suitable trees or plants for plant
     // Invoke Gemini
     const response = await model.invoke(messages);
 
-    // Extract content
-    let content = response.content;
+    // Extract content safely
+    let content = "";
+    if (typeof response.content === "string") {
+      content = response.content;
+    } else if (Array.isArray(response.content)) {
+      content = response.content.map(c => c.text || "").join("");
+    } else {
+      content = String(response.content);
+    }
 
     // Clean up markdown formatting if present
-    content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    content = content.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
 
     // Parse JSON response
     const recommendations = JSON.parse(content);
@@ -120,6 +127,10 @@ Based on this environmental data, recommend 5 suitable trees or plants for plant
 
     if (error.message.includes("API key")) {
       throw new Error("AI recommendation service authentication failed");
+    }
+
+    if (error.message.includes("429") || error.message.includes("Quota exceeded") || error.message.includes("Too Many Requests")) {
+      throw new Error("AI service rate limit exceeded. Please wait a moment and try again.");
     }
 
     // Generic error

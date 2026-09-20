@@ -8,6 +8,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,15 +24,19 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const user = await handleLogin({
         email: formData.email,
         password: formData.password,
       });
       // Redirect after successful login
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,7 +128,7 @@ const Login = () => {
         <main className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10 md:py-14">
           <div className="w-full max-w-[440px]">
             {/* Heading Module */}
-            <div className="mb-9">
+            <div className="mb-9 animate-fade-in-up stagger-1">
               <h1 className="font-[Outfit,sans-serif] font-light text-[36px] sm:text-[40px] leading-[1.15] tracking-tight text-[#F0FDF4]">
                 Welcome Back
               </h1>
@@ -137,7 +142,7 @@ const Login = () => {
               {/* Field Stack */}
               <div className="space-y-5">
                 {/* Field 1: Email */}
-                <div>
+                <div className="animate-fade-in-up stagger-2">
                   <label
                     htmlFor="email"
                     className="block font-[Inter,sans-serif] text-xs uppercase tracking-widest text-[#9CA3AF] font-medium mb-2"
@@ -160,7 +165,7 @@ const Login = () => {
                 </div>
 
                 {/* Field 2: Password */}
-                <div>
+                <div className="animate-fade-in-up stagger-3">
                   <div className="flex items-center justify-between mb-2">
                     <label
                       htmlFor="password"
@@ -204,15 +209,23 @@ const Login = () => {
               </div>
 
               {/* Action / Submit Button */}
-              <button
-                type="submit"
-                className="w-full h-12 mt-8 rounded-lg bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] font-[Inter,sans-serif] font-medium tracking-wide transition-colors duration-200 flex items-center justify-center shadow-none active:scale-[0.99] cursor-pointer"
-              >
-                Sign In
-              </button>
+              <div className="animate-fade-in-up stagger-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full h-12 mt-8 rounded-lg bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] font-[Inter,sans-serif] font-medium tracking-wide transition-all duration-200 flex items-center justify-center shadow-none cursor-pointer ${isLoading ? 'opacity-80 cursor-not-allowed' : 'hover:-translate-y-0.5 active:scale-[0.98]'}`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-[#050B07]/30 border-t-[#050B07] rounded-full animate-spin"></span>
+                      Signing in...
+                    </span>
+                  ) : "Sign In"}
+                </button>
+              </div>
 
               {/* Form Inline Footer Links */}
-              <div className="mt-6 text-center">
+              <div className="mt-6 text-center animate-fade-in-up stagger-5">
                 <p className="text-xs font-[Inter,sans-serif] text-[#9CA3AF]">
                   Don't have an account?{" "}
                   <Link

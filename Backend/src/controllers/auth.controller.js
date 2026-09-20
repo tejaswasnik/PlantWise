@@ -49,4 +49,45 @@ const loginController = async (req, res) => {
   }
 };
 
-export { registerController, loginController };
+const logoutController = async (req, res) => {
+  try {
+    // Clear the authentication cookie
+    res.clearCookie("token");
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getMeController = async (req, res) => {
+  try {
+    // Get token from cookie
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const user = await userModel.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+};
+
+export { registerController, loginController, logoutController, getMeController };
