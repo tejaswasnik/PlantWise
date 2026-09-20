@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import { MapPin, Navigation } from "lucide-react";
+import { setSelectedLocation } from "../state/location.slice.js";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -23,14 +25,17 @@ const greenIcon = new L.Icon({
 });
 
 // Component to handle map clicks
-function LocationMarker({ position, setPosition, onLocationSelect }) {
+function LocationMarker({ position, setPosition, dispatch }) {
   useMapEvents({
     click(e) {
       const newPosition = [e.latlng.lat, e.latlng.lng];
       setPosition(newPosition);
-      if (onLocationSelect) {
-        onLocationSelect(newPosition);
-      }
+      
+      // Dispatch to Redux
+      dispatch(setSelectedLocation({
+        latitude: e.latlng.lat,
+        longitude: e.latlng.lng,
+      }));
     },
   });
 
@@ -53,7 +58,8 @@ function LocationMarker({ position, setPosition, onLocationSelect }) {
   );
 }
 
-const Map = ({ onLocationSelect, initialPosition = [20.5937, 78.9629] }) => {
+const Map = ({ initialPosition = [20.5937, 78.9629] }) => {
+  const dispatch = useDispatch();
   const [position, setPosition] = useState(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
@@ -68,9 +74,13 @@ const Map = ({ onLocationSelect, initialPosition = [20.5937, 78.9629] }) => {
             position.coords.longitude,
           ];
           setPosition(newPosition);
-          if (onLocationSelect) {
-            onLocationSelect(newPosition);
-          }
+          
+          // Dispatch to Redux
+          dispatch(setSelectedLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }));
+          
           setIsLoadingLocation(false);
         },
         (error) => {
@@ -83,7 +93,7 @@ const Map = ({ onLocationSelect, initialPosition = [20.5937, 78.9629] }) => {
       alert("Geolocation is not supported by your browser");
       setIsLoadingLocation(false);
     }
-  }, [onLocationSelect]);
+  }, [dispatch]);
 
   return (
     <div className="relative w-full h-full">
@@ -101,7 +111,7 @@ const Map = ({ onLocationSelect, initialPosition = [20.5937, 78.9629] }) => {
         <LocationMarker
           position={position}
           setPosition={setPosition}
-          onLocationSelect={onLocationSelect}
+          dispatch={dispatch}
         />
       </MapContainer>
 

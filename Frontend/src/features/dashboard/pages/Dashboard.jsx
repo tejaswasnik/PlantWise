@@ -1,69 +1,28 @@
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router";
 import { Leaf, MapPin, Sparkles, LogOut, ChevronRight, X } from "lucide-react";
+import { analyzeLocation } from "../state/location.slice.js";
 import Map from "../components/Map";
 
 const Dashboard = () => {
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [recommendations, setRecommendations] = useState(null);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const dispatch = useDispatch();
+  
+  // Get Redux state
+  const { selectedLocation, analysis, loading, error } = useSelector((state) => state.location);
+  
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
-  const handleLocationSelect = (location) => {
-    setSelectedLocation(location);
-    setRecommendations(null); // Clear previous recommendations
-    setIsPanelOpen(true); // Open panel when location is selected
-  };
-
-  const handleGetRecommendations = async () => {
+  const handleAnalyzeLocation = () => {
     if (!selectedLocation) {
       alert("Please select a location on the map first");
       return;
     }
 
-    setIsLoadingRecommendations(true);
-    
-    // TODO: Replace with actual API call to get tree recommendations
-    // This is a placeholder - you'll integrate with Gemini AI here
-    setTimeout(() => {
-      setRecommendations({
-        location: {
-          lat: selectedLocation[0],
-          lng: selectedLocation[1],
-        },
-        climate: "Tropical",
-        soilType: "Loamy",
-        rainfall: "1200mm annually",
-        temperature: "25-35°C",
-        trees: [
-          {
-            name: "Neem Tree",
-            scientificName: "Azadirachta indica",
-            suitability: 95,
-            benefits: ["Air purification", "Medicinal properties", "Shade"],
-            growthRate: "Fast",
-            waterRequirement: "Low",
-          },
-          {
-            name: "Peepal Tree",
-            scientificName: "Ficus religiosa",
-            suitability: 90,
-            benefits: ["Oxygen production", "Cultural significance", "Wildlife habitat"],
-            growthRate: "Moderate",
-            waterRequirement: "Medium",
-          },
-          {
-            name: "Banyan Tree",
-            scientificName: "Ficus benghalensis",
-            suitability: 85,
-            benefits: ["Large canopy", "Erosion control", "Biodiversity support"],
-            growthRate: "Slow",
-            waterRequirement: "Medium",
-          },
-        ],
-      });
-      setIsLoadingRecommendations(false);
-    }, 2000);
+    dispatch(analyzeLocation({
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude,
+    }));
   };
 
   return (
@@ -102,10 +61,7 @@ const Dashboard = () => {
       <main className="flex-1 relative overflow-hidden">
         {/* Full Page Map */}
         <div className="absolute inset-0">
-          <Map
-            onLocationSelect={handleLocationSelect}
-            initialPosition={[20.5937, 78.9629]} // Center of India
-          />
+          <Map initialPosition={[20.5937, 78.9629]} />
         </div>
 
         {/* Sliding Panel Toggle Button */}
@@ -153,27 +109,27 @@ const Dashboard = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-[#9CA3AF]">Latitude:</span>
-                      <span className="text-[#F0FDF4] font-mono">{selectedLocation[0].toFixed(6)}</span>
+                      <span className="text-[#F0FDF4] font-mono">{selectedLocation.latitude.toFixed(6)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#9CA3AF]">Longitude:</span>
-                      <span className="text-[#F0FDF4] font-mono">{selectedLocation[1].toFixed(6)}</span>
+                      <span className="text-[#F0FDF4] font-mono">{selectedLocation.longitude.toFixed(6)}</span>
                     </div>
                   </div>
-                  {!recommendations && !isLoadingRecommendations && (
+                  {!analysis && !loading && (
                     <button
-                      onClick={handleGetRecommendations}
+                      onClick={handleAnalyzeLocation}
                       className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] rounded-lg font-medium transition-colors duration-200"
                     >
                       <Sparkles className="w-4 h-4" />
-                      <span className="text-sm">Get AI Recommendations</span>
+                      <span className="text-sm">Analyze Location</span>
                     </button>
                   )}
                 </div>
               )}
 
               {/* No Location Selected */}
-              {!selectedLocation && !recommendations && (
+              {!selectedLocation && !analysis && (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-[#22C55E]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <MapPin className="w-10 h-10 text-[#22C55E]" />
@@ -186,100 +142,51 @@ const Dashboard = () => {
               )}
 
               {/* Loading State */}
-              {isLoadingRecommendations && (
+              {loading && (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-[#22C55E]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Sparkles className="w-10 h-10 text-[#22C55E] animate-spin" />
                   </div>
-                  <p className="text-base text-[#F0FDF4] mb-2 font-medium">Analyzing Location...</p>
+                  <p className="text-base text-[#F0FDF4] mb-2 font-medium">Analyzing...</p>
                   <p className="text-sm text-[#9CA3AF] px-4">
-                    Using Gemini AI to find the best trees for this area
+                    Analyzing location data
                   </p>
                 </div>
               )}
 
-              {/* Recommendations */}
-              {recommendations && (
+              {/* Error State */}
+              {error && (
+                <div className="bg-red-900/20 border border-red-900/40 rounded-lg p-4">
+                  <p className="text-sm text-red-400">{error}</p>
+                  <button
+                    onClick={handleAnalyzeLocation}
+                    className="w-full mt-3 px-4 py-2 bg-[#22C55E] hover:bg-[#16A34A] text-[#050B07] rounded-lg text-sm font-medium transition-colors duration-200"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* Analysis Result */}
+              {analysis && (
                 <div className="space-y-4">
-                  {/* Environmental Data */}
                   <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
                     <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-3 font-medium">
-                      Environmental Analysis
+                      Location Analysis
                     </p>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-[#9CA3AF] text-xs mb-1">Climate</p>
-                        <p className="text-[#F0FDF4] font-medium">{recommendations.climate}</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#9CA3AF]">Latitude:</span>
+                        <span className="text-[#F0FDF4] font-mono">{analysis.location.latitude.toFixed(6)}</span>
                       </div>
-                      <div>
-                        <p className="text-[#9CA3AF] text-xs mb-1">Soil Type</p>
-                        <p className="text-[#F0FDF4] font-medium">{recommendations.soilType}</p>
+                      <div className="flex justify-between">
+                        <span className="text-[#9CA3AF]">Longitude:</span>
+                        <span className="text-[#F0FDF4] font-mono">{analysis.location.longitude.toFixed(6)}</span>
                       </div>
-                      <div>
-                        <p className="text-[#9CA3AF] text-xs mb-1">Rainfall</p>
-                        <p className="text-[#F0FDF4] font-medium">{recommendations.rainfall}</p>
+                      <div className="mt-4 pt-4 border-t border-[#1B2E21]">
+                        <p className="text-xs text-[#9CA3AF] mb-2">Status:</p>
+                        <p className="text-sm text-[#22C55E]">{analysis.message}</p>
                       </div>
-                      <div>
-                        <p className="text-[#9CA3AF] text-xs mb-1">Temperature</p>
-                        <p className="text-[#F0FDF4] font-medium">{recommendations.temperature}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Recommended Trees */}
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-3 font-medium">
-                      Recommended Trees ({recommendations.trees.length})
-                    </p>
-                    <div className="space-y-3">
-                      {recommendations.trees.map((tree, index) => (
-                        <div
-                          key={index}
-                          className="bg-[#050B07] border border-[#1B2E21] hover:border-[#22C55E]/40 rounded-lg p-4 transition-colors duration-200"
-                        >
-                          {/* Tree Header */}
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="font-medium text-[#F0FDF4] text-base">{tree.name}</h3>
-                              <p className="text-xs text-[#9CA3AF] italic mt-0.5">{tree.scientificName}</p>
-                            </div>
-                            <div className="flex flex-col items-end ml-3">
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-bold text-[#22C55E]">{tree.suitability}</span>
-                                <span className="text-xs text-[#9CA3AF]">%</span>
-                              </div>
-                              <span className="text-[10px] text-[#9CA3AF] uppercase tracking-wider">Match</span>
-                            </div>
-                          </div>
-
-                          {/* Tree Details */}
-                          <div className="space-y-2 mb-3">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#9CA3AF]">Growth Rate:</span>
-                              <span className="text-[#F0FDF4] font-medium">{tree.growthRate}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#9CA3AF]">Water Need:</span>
-                              <span className="text-[#F0FDF4] font-medium">{tree.waterRequirement}</span>
-                            </div>
-                          </div>
-
-                          {/* Benefits */}
-                          <div>
-                            <p className="text-xs text-[#9CA3AF] mb-2">Benefits:</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {tree.benefits.map((benefit, i) => (
-                                <span
-                                  key={i}
-                                  className="text-xs px-2.5 py-1 bg-[#22C55E]/10 text-[#22C55E] rounded-full border border-[#22C55E]/20"
-                                >
-                                  {benefit}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>
