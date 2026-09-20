@@ -258,12 +258,97 @@ const Dashboard = () => {
                     </div>
                   )}
 
-                  {/* Data Source */}
+                  {/* AI Recommendations */}
+                  {analysis.recommendations && (
+                    <div className="space-y-3">
+                      {/* Summary */}
+                      {analysis.recommendations.summary && (
+                        <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-4">
+                          <p className="text-xs uppercase tracking-wider text-[#22C55E] mb-2 font-medium">
+                            PlantWise Analysis
+                          </p>
+                          <p className="text-sm text-[#9CA3AF] leading-relaxed">
+                            {analysis.recommendations.summary}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Recommendations Header */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs uppercase tracking-wider text-[#22C55E] font-medium">
+                          Recommended Plants ({analysis.recommendations.recommendations?.length || 0})
+                        </p>
+                      </div>
+
+                      {/* Plant Cards */}
+                      {analysis.recommendations.recommendations?.map((plant, index) => (
+                        <div
+                          key={index}
+                          className="bg-[#050B07] border border-[#1B2E21] hover:border-[#22C55E]/40 rounded-lg p-4 transition-colors duration-200"
+                        >
+                          {/* Plant Header */}
+                          <div className="flex items-start gap-2 mb-3">
+                            <span className="text-2xl">🌳</span>
+                            <div className="flex-1">
+                              <h3 className="font-medium text-[#F0FDF4] text-base">{plant.name}</h3>
+                              <p className="text-xs text-[#9CA3AF] italic">{plant.scientificName}</p>
+                            </div>
+                          </div>
+
+                          {/* Plant Attributes */}
+                          <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div className="bg-[#0A1108] rounded px-2 py-1.5">
+                              <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">
+                                Suitability
+                              </p>
+                              <p className="text-xs text-[#F0FDF4] font-medium">{plant.suitability}</p>
+                            </div>
+                            <div className="bg-[#0A1108] rounded px-2 py-1.5">
+                              <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">
+                                Water
+                              </p>
+                              <p className="text-xs text-[#F0FDF4] font-medium">{plant.waterRequirement}</p>
+                            </div>
+                            <div className="bg-[#0A1108] rounded px-2 py-1.5">
+                              <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">
+                                Maintenance
+                              </p>
+                              <p className="text-xs text-[#F0FDF4] font-medium">{plant.maintenance}</p>
+                            </div>
+                          </div>
+
+                          {/* Reason */}
+                          <div className="mb-3">
+                            <p className="text-xs text-[#9CA3AF] mb-1.5">Why suitable:</p>
+                            <p className="text-xs text-[#F0FDF4] leading-relaxed">{plant.reason}</p>
+                          </div>
+
+                          {/* Considerations */}
+                          {plant.considerations && (
+                            <div>
+                              <p className="text-xs text-[#9CA3AF] mb-1.5">Considerations:</p>
+                              <p className="text-xs text-[#F0FDF4] leading-relaxed">{plant.considerations}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Data Sources */}
                   {analysis.source && (
                     <div className="bg-[#050B07] border border-[#1B2E21] rounded-lg p-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#9CA3AF]">Data Source:</span>
-                        <span className="text-[#22C55E] font-medium">{analysis.source.name}</span>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#9CA3AF]">Environmental Data:</span>
+                          <span className="text-[#22C55E] font-medium">{analysis.source.environmental}</span>
+                        </div>
+                        {analysis.source.ai && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[#9CA3AF]">AI Recommendations:</span>
+                            <span className="text-[#22C55E] font-medium">{analysis.source.ai}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
