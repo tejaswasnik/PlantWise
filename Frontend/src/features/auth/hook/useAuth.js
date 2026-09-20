@@ -12,6 +12,7 @@ export const useAuth = () => {
       dispatch(setUser(user));
     } catch (error) {
       console.error("Error registering user:", error);
+      throw error;
     } finally {
       dispatch(setLoading(false));
     }

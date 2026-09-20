@@ -28,7 +28,7 @@ const registerValidator = [
 	body("password")
 		.isString()
 		.withMessage("Password must be a string")
-		.isLength({ min: 8 })
+		.isLength({ min: 6 })
 		.withMessage("Password must be at least 8 characters"),
 	handleValidationErrors,
 ];
