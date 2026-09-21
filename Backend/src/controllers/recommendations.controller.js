@@ -45,7 +45,7 @@ const analyzeLocationController = async (req, res) => {
       recommendations: aiRecommendations,
       source: {
         environmental: "Open-Meteo",
-        ai: "Google Gemini",
+        ai: "Ollama (Local LLM)",
       },
     });
   } catch (error) {

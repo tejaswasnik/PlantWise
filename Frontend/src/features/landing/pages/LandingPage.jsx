@@ -123,7 +123,7 @@ export default function LandingPage() {
               {[
                 { step: "01", title: "Choose a location", desc: "Search for a place or select a point directly on the interactive map." },
                 { step: "02", title: "Understand the environment", desc: "PlantWise retrieves available environmental conditions for the selected location." },
-                { step: "03", title: "Analyze with Gemini", desc: "Gemini evaluates the available conditions and generates structured plant recommendations." },
+                { step: "03", title: "Analyze with AI", desc: "Local AI evaluates the available conditions and generates structured plant recommendations." },
                 { step: "04", title: "Plant with context", desc: "Explore potentially suitable species and understand why they were recommended." }
               ].map((item, i) => (
                 <AnimatedSection key={i} staggerDelay={i * 150} className="relative group">
@@ -241,7 +241,7 @@ export default function LandingPage() {
             <ul className="space-y-4 text-sm">
               <li>Open-Meteo</li>
               <li>OpenStreetMap</li>
-              <li>Google Gemini</li>
+              <li>Ollama (Local AI)</li>
             </ul>
           </div>
         </div>

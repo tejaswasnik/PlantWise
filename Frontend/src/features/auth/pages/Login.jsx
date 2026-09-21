@@ -91,12 +91,12 @@ const Login = () => {
             Discover the Right Tree for the Right Place
           </h2>
           <p className="font-[Inter,sans-serif] text-sm sm:text-base text-[#9CA3AF] mt-3 leading-relaxed">
-            Leveraging location-specific environmental data and Gemini AI to recommend suitable tree species.
+            Leveraging location-specific environmental data and local AI to recommend suitable tree species.
           </p>
           {/* Subtle Spec Rule */}
           <div className="mt-8 pt-6 border-t border-[#1B2E21]/80 flex items-center justify-between text-[11px] text-[#6B7280] font-mono uppercase tracking-wider">
             <span>Data-Driven Insights</span>
-            <span>Gemini AI Powered</span>
+            <span>Ollama AI Powered</span>
           </div>
         </div>
       </aside>

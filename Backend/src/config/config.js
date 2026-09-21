@@ -12,9 +12,16 @@ if (!process.env.MONGO_URI) {
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in the environment variables");
 }
-if (!process.env.GEMINI_API_KEY) {
+
+if (!process.env.OLLAMA_BASE_URL) {
   console.warn(
-    "Warning: GEMINI_API_KEY is not defined in the environment variables. AI recommendations will be disabled.",
+    "Warning: OLLAMA_BASE_URL is not defined in the environment variables. Defaulting to http://localhost:11434",
+  );
+}
+
+if (!process.env.OLLAMA_MODEL) {
+  console.warn(
+    "Warning: OLLAMA_MODEL is not defined in the environment variables. AI recommendations may fail.",
   );
 }
 
@@ -22,7 +29,8 @@ const config = {
   PORT: process.env.PORT,
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY || "", // Optional, only required for AI recommendations
+  OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
+  OLLAMA_MODEL: process.env.OLLAMA_MODEL || "qwen2.5:3b",
 };
 
 export default config;

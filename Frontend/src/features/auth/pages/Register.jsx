@@ -98,7 +98,7 @@ const Register = () => {
           {/* Subtle Spec Rule */}
           <div className="mt-8 pt-6 border-t border-[#1B2E21]/80 flex items-center justify-between text-[11px] text-[#6B7280] font-mono uppercase tracking-wider">
             <span>Environmental Data</span>
-            <span>Gemini AI Powered</span>
+            <span>Ollama AI Powered</span>
           </div>
         </div>
       </aside>
